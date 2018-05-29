@@ -51,12 +51,23 @@ void part_one_classifier(float **data_train,float **data_test)
             PART TWO - 9 Class Perceptron
  */
 
+float **build_matrix(int rows, int columns)
+{
+    float **map;
+    map = (float **) malloc(sizeof(float*)*rows);
+    for (int i=0 ; i < rows; i++)
+    {
+        map[i]=(float *) malloc(sizeof(float) * columns);
+    }
+    return map;
+}
+
 float dot_product(float *weights, float x, float y){
     return weights[0]*x + weights[1]*y + weights[2];
 }
 
-float prediction_calc_multi(float **weights, float x, float y){
-    float max_ii = 0;
+int prediction_calc_multi(float **weights, float x, float y){
+    int max_ii = 0;
     float maxVal = dot_product(weights[0], x, y);
     for(int ii = 1; ii < 9; ii++){
         float valHold = dot_product(weights[ii], x, y);
@@ -71,7 +82,7 @@ float prediction_calc_multi(float **weights, float x, float y){
 float calc_train_success_multi(float **weights, float **data_train){
     float correct = 0;
     for(int ii = 0; ii < TRAINING_SIZE; ii++){
-        float predHold = prediction_calc_multi(weights, data_train[ii][0], data_train[ii][1]);
+        float predHold = (float)prediction_calc_multi(weights, data_train[ii][0], data_train[ii][1]);
         if(predHold == data_train[ii][2]){
             correct++;
         }
@@ -90,5 +101,62 @@ void part_two_classifier(float **data_train,float **data_test)
 	// to be filled with class
 	// The class value could be a 0 or a 8
     
-    //I AM EDITING THIS HAHASHAHA AH
+    //Initialize the weights array
+    float ** weightVec = build_matrix(9, 3);
+    float succRate = 0;
+    int iterCount = 0;
+    //Iterate for as long as the training weights are sufficient but cut at too many inerations
+    while(succRate < .95 && iterCount < 5000){
+        //Iterate over all the data points
+        for(int ii = 0; ii< TRAINING_SIZE; ii++){
+            float xHold = data_train[ii][0];
+            float yHold = data_train[ii][1];
+            int labHold = (int)data_train[ii][2];
+            //Find the best weight
+            int max_ii = prediction_calc_multi(weightVec, xHold, yHold);
+            //Check to adjust the weight
+            if(labHold != max_ii){
+                weightVec[max_ii][0] = weightVec[max_ii][0] - xHold;
+                weightVec[max_ii][1] = weightVec[max_ii][1] - yHold;
+                weightVec[max_ii][2] = weightVec[max_ii][2] - 1;
+                weightVec[labHold][0] = weightVec[labHold][0] + xHold;
+                weightVec[labHold][1] = weightVec[labHold][1] + yHold;
+                weightVec[labHold][2] = weightVec[labHold][2] + 1;
+
+            }
+            //Update success rate and iteraction count
+            succRate = calc_train_success_multi(weightVec, data_train);
+            iterCount++;
+        }
+    }
+    //Fill in the rows of the test data
+    for(int ii = 0 ; ii < TEST_SIZE; ii++){
+        data_test[ii][2] = (float)prediction_calc_multi(weightVec, data_test[ii][0], data_test[ii][1]);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
