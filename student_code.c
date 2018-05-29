@@ -47,6 +47,37 @@ void part_one_classifier(float **data_train,float **data_test)
 
 }
 
+/*
+            PART TWO - 9 Class Perceptron
+ */
+
+float dot_product(float *weights, float x, float y){
+    return weights[0]*x + weights[1]*y + weights[2];
+}
+
+float prediction_calc_multi(float **weights, float x, float y){
+    float max_ii = 0;
+    float maxVal = dot_product(weights[0], x, y);
+    for(int ii = 1; ii < 9; ii++){
+        float valHold = dot_product(weights[ii], x, y);
+        if(valHold > maxVal){
+            maxVal = valHold;
+            max_ii = ii;
+        }
+    }
+    return max_ii;
+}
+
+float calc_train_success_multi(float **weights, float **data_train){
+    float correct = 0;
+    for(int ii = 0; ii < TRAINING_SIZE; ii++){
+        float predHold = prediction_calc_multi(weights, data_train[ii][0], data_train[ii][1]);
+        if(predHold == data_train[ii][2]){
+            correct++;
+        }
+    }
+    return correct;
+}
 void part_two_classifier(float **data_train,float **data_test)
 {
 	// PUT YOUR CODE HERE
